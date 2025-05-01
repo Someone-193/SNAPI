@@ -10,7 +10,7 @@ namespace SNAPI.EventHandlers
         {
             if (ev.Player.CurrentItem == null) return;
             SnakeContext context = SnakeContext.Get(ev.Player.CurrentItem.Serial);
-            if (context == null) return;
+            if (context is not { Playing: true }) return;
 
             context.Playing = false;
             context.Timer.Reset();

@@ -29,8 +29,22 @@ namespace SNAPI
       Harmony.PatchAll();
       EServer.WaitingForPlayers += WaitingForPlayers.OnWaitingForPlayers;
       EPlayer.ChangingItem += ChangingItem.OnChangingItem;
-      SnakePlayer.StartingNewSnake += StartingNewSnake.OnStartNewSnake;
-      SnakePlayer.SnakeMove += SnakeMove.OnSnakeMove;
+      EPlayer.ItemRemoved += ItemRemoved.OnItemRemoved;
+      if (!Config.APIMode)
+      {
+        SnakePlayer.StartingNewSnake += StartingNewSnake.OnStartNewSnake;
+        SnakePlayer.SnakeMove += SnakeMove.OnSnakeMove;
+      }
+
+      // For debugging
+      // SnakePlayer.GameOver += _ => Log.Warn("Game Over");
+      // SnakePlayer.PausingSnake += _ => Log.Warn("Snake Paused");
+      // SnakePlayer.ResumingSnake += _ => Log.Warn("Snake Resumed");
+      // SnakePlayer.Score += _ => Log.Warn("Scored");
+      // SnakePlayer.SnakeMove += _ => Log.Warn("Snake Moved");
+      // SnakePlayer.StartingNewSnake += _ => Log.Warn("Snake Started");
+      // SnakePlayer.SwitchAxes += _ => Log.Warn("Switch Axes");
+      
 #if RUEI
       RueIMain.EnsureInit();
 #endif
@@ -42,8 +56,12 @@ namespace SNAPI
       Harmony.UnpatchAll("SNAPI");
       EServer.WaitingForPlayers -= WaitingForPlayers.OnWaitingForPlayers;
       EPlayer.ChangingItem -= ChangingItem.OnChangingItem;
-      SnakePlayer.StartingNewSnake -= StartingNewSnake.OnStartNewSnake;
-      SnakePlayer.SnakeMove -= SnakeMove.OnSnakeMove;
+      EPlayer.ItemRemoved -= ItemRemoved.OnItemRemoved;
+      if (!Config.APIMode)
+      {
+        SnakePlayer.StartingNewSnake -= StartingNewSnake.OnStartNewSnake;
+        SnakePlayer.SnakeMove -= SnakeMove.OnSnakeMove;
+      }
       Instance = null;
     }
     public override void OnRegisteringCommands()

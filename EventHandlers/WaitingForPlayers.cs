@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Exiled.API.Features;
 using SNAPI.Events.EventArgs;
 using SNAPI.Events.Handlers;
@@ -18,26 +19,36 @@ namespace SNAPI.EventHandlers
     {
         public void Update()
         {
-            foreach (SnakeContext context in SnakeContext.SavedContexts.Values)
+            try
             {
-                bool skip = context.TotalTimePlaying.TotalSeconds < 0.6F;
-                bool overrideValue = context.Timer.Elapsed.TotalSeconds > 0.6F;
-                if (context.Playing) context.TotalTimePlaying += TimeSpan.FromSeconds(Time.deltaTime);
-                if (context.Playing && overrideValue && !skip)
+                foreach (SnakeContext context in SnakeContext.SavedContexts.Values)
                 {
-                    SnakePlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
-                    context.Playing = false;
-                    context.Timer.Reset();
+                    bool skip = context.TotalTimePlaying.TotalSeconds < 0.6F;
+                    bool overrideValue = context.Timer.Elapsed.TotalSeconds > 0.6F;
+                    if (context.Playing) context.TotalTimePlaying += TimeSpan.FromSeconds(Time.deltaTime);
+                    if (context.Playing && overrideValue && !skip)
+                    {
+                        SnakePlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
+                        context.Playing = false;
+                        context.Timer.Reset();
+                    }
+                }
+                
+                foreach (Player key in SnakeMove.Cooldowns.Keys.ToArray())
+                {
+                    double value = SnakeMove.Cooldowns[key];
+                    if (Main.Instance.Config.UseCooldown) value -= Time.deltaTime;
+                    SnakeMove.Cooldowns[key] = value;
+                    if (value > 0) continue;
+                    SnakeMove.Cooldowns.Remove(key);
+                    SnakeContext context = SnakeContext.Get(key.CurrentItem?.Serial ?? 0);
+                    if (context == null) continue;
+                    SnakeMove.SavedDurations[key] = context.TotalTimePlaying.TotalSeconds;
                 }
             }
-            foreach (KeyValuePair<ushort, double> kvp in SnakeMove.Cooldowns)
+            catch (Exception e)
             {
-                SnakeMove.Cooldowns[kvp.Key] = kvp.Value - Time.deltaTime;
-                if (SnakeMove.Cooldowns[kvp.Key] > 0) continue;
-                SnakeMove.Cooldowns.Remove(kvp.Key);
-                SnakeContext context = SnakeContext.Get(kvp.Key);
-                if (context == null) continue;
-                SnakeMove.SavedDurations.Add(kvp.Key, context.TotalTimePlaying.TotalSeconds);
+                Log.Error(e);
             }
         }
     }

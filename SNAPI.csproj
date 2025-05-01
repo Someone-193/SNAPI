@@ -113,6 +113,7 @@
     <ItemGroup>
         <Compile Include="Commands\ForceSnake.cs" />
         <Compile Include="EventHandlers\ChangingItem.cs" />
+        <Compile Include="EventHandlers\ItemRemoved.cs" />
         <Compile Include="EventHandlers\SnakeMove.cs" />
         <Compile Include="EventHandlers\StartingNewSnake.cs" />
         <Compile Include="EventHandlers\WaitingForPlayers.cs" />

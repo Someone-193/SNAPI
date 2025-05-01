@@ -47,6 +47,25 @@ namespace SNAPI.Patches
         {
             try
             {
+                // good to use to figure out how these messages work
+
+                // Log.Warn($"Flags: {msg.Flags.ToString()}");
+                // Log.Warn($"Move Offset: {msg.MoveOffset.ToString()}");
+                // Log.Warn($"Next Food Position: {msg.NextFoodPosition?.ToString() ?? "NULL"}");
+                // if (msg.Segments == null)
+                // {
+                //     Log.Warn("No Segments");
+                //     goto skip;
+                // }
+                // string txt = "Segments: ";
+                // foreach (Vector2Int segment in msg.Segments)
+                // {
+                //     txt += $"{segment.ToString()}, ";
+                // }
+                // if (txt.Length > 1) txt = txt.Remove(txt.Length - 2, 2);
+                // Log.Warn(txt);
+                // skip:
+
                 SnakeContext context = SnakeContext.Get(keycard.ItemSerial);
                 if (context == null)
                 {
@@ -67,11 +86,19 @@ namespace SNAPI.Patches
                     context.NextFoodPosition = msg.NextFoodPosition ?? throw new NullReferenceException("Next food position was null!");
                 }
 
-                if (context.Initialized && !context.Playing && (isNew || msg.MoveOffset != Vector2Int.zero))
+                if (!context.Timer.IsRunning && context.Initialized && context.Started && !context.Stopping)
+                {
+                    SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
+                    context.Playing = true;
+                }
+                context.Timer.Restart();
+
+                if (context.Initialized && !context.Playing && !context.Started && (isNew || msg.MoveOffset != Vector2Int.zero))
                 {   
                     context.Segments = new List<Vector2Int>(StartSegments);
                     context.Playing = true;
                     context.Timer.Restart();
+                    context.Started = true;
                     SPlayer.OnStartingNewSnake(new StartingNewSnakeEventArgs(context));
                 }
                 
@@ -89,17 +116,6 @@ namespace SNAPI.Patches
                     if (!newFood) context.Segments.RemoveAt(context.Segments.Count - 1);
                     SPlayer.OnSnakeMove(new SnakeMoveEventArgs(context));
                 }
-
-                switch (context.Timer.IsRunning)
-                {
-                    case false when context.Initialized:
-                        SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
-                        context.Playing = true;
-                        break;
-                    case true:
-                        context.Timer.Restart();
-                        break;
-                }
                 
                 if (gameOver)
                 {
@@ -110,24 +126,6 @@ namespace SNAPI.Patches
                     context.Playing = false;
                     context.Score = 0;
                 }
-
-                // good to use to figure out how these messages work
-
-                // Log.Warn($"Flags: {msg.Flags.ToString()}");
-                // Log.Warn($"Move Offset: {msg.MoveOffset.ToString()}");
-                // Log.Warn($"Next Food Position: {msg.NextFoodPosition?.ToString() ?? "NULL"}");
-                // if (msg.Segments == null)
-                // {
-                //     Log.Warn("No Segments");
-                //     return;
-                // }
-                // string txt = "Segments: ";
-                // foreach (Vector2Int segment in msg.Segments)
-                // {
-                //     txt += $"{segment.ToString()}, ";
-                // }
-                // if (txt.Length > 1) txt = txt.Remove(txt.Length - 2, 2);
-                // Log.Warn(txt);
             }
             catch (Exception e)
             {
