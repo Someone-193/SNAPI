@@ -22,6 +22,12 @@
 
   **Please contact ```atsomeone``` on Discord for any questions or concerns!**
 
+
+# Multiple Versions
+  SNAPI Has 3 Versions. Exiled, HSM, and RueI. Each of these correlate to a different Hint management system. If your server has HSM, use the HSM build, etc.
+  This is useful for some of the configs for Server Hosts as they can control which Hint framework they want simply based on version.
+
+
 # How It Works
   Snake in SCP:SL (14.1 Public Beta) is client side and cannot be controlled by a server. How then did I accomplish what I did?
   
