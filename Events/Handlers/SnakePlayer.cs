@@ -1,6 +1,6 @@
 ﻿using Exiled.Events.Features;
-using SnakeAPI.Events.EventArgs;
-namespace SnakeAPI.Events
+using SNAPI.Events.EventArgs;
+namespace SNAPI.Events.Handlers
 {
     public class SnakePlayer
     {

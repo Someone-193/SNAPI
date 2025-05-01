@@ -1,9 +1,9 @@
 ﻿using Exiled.API.Features;
 using Exiled.API.Features.Items;
 using Exiled.Events.EventArgs.Interfaces;
-using SnakeAPI.Features;
+using SNAPI.Features;
 using UnityEngine;
-namespace SnakeAPI.Events.EventArgs
+namespace SNAPI.Events.EventArgs
 {
     public class PausingSnakeEventArgs : IPlayerEvent
     {

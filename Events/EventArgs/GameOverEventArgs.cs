@@ -1,8 +1,8 @@
 ﻿using Exiled.API.Features;
 using Exiled.API.Features.Items;
 using Exiled.Events.EventArgs.Interfaces;
-using SnakeAPI.Features;
-namespace SnakeAPI.Events.EventArgs
+using SNAPI.Features;
+namespace SNAPI.Events.EventArgs
 {
     public class GameOverEventArgs : IPlayerEvent
     {

@@ -1,14 +1,16 @@
-﻿using SnakeAPI.Events;
-using SnakeAPI.Events.EventArgs;
-using SnakeAPI.Features;
+﻿using System;
+using Exiled.API.Features;
+using SNAPI.Events.EventArgs;
+using SNAPI.Events.Handlers;
+using SNAPI.Features;
 using UnityEngine;
-namespace SnakeAPI.EventHandlers
+namespace SNAPI.EventHandlers
 {
     public class WaitingForPlayers
     {
         public static void OnWaitingForPlayers()
         {
-            
+            if (!Server.Host.GameObject.GetComponent<ActiveSnakeHandler>()) Server.Host.GameObject.AddComponent<ActiveSnakeHandler>();
         }
     }
     public class ActiveSnakeHandler : MonoBehaviour
@@ -18,16 +20,14 @@ namespace SnakeAPI.EventHandlers
             foreach (SnakeContext context in SnakeContext.SavedContexts.Values)
             {
                 bool wasPlaying = context.Playing;
-                context.Playing = context.Timer.Elapsed.TotalSeconds < 1.5F;
-                if (wasPlaying != context.Playing)
+                bool skip = context.TotalTimePlaying.TotalSeconds < 0.6F;
+                context.Playing = context.Timer.Elapsed.TotalSeconds < 0.6F || skip;
+                // Need to figure out when detecting pause or known playing.
+                if (context.Playing) context.TotalTimePlaying += TimeSpan.FromSeconds(Time.deltaTime);
+                if (wasPlaying && !context.Playing && !skip)
                 {
-                    if (context.Playing)
-                        SnakePlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
-                    else
-                    {
-                        SnakePlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
-                        context.Timer.Reset();
-                    }
+                    SnakePlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
+                    context.Timer.Reset();
                 }
             }
         }

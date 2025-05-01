@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using Exiled.API.Features;
 using Exiled.API.Features.Pools;
 using HarmonyLib;
 using InventorySystem.Items.Keycards;
 using InventorySystem.Items.Keycards.Snake;
-using Mirror;
-using SnakeAPI.Events;
-using SnakeAPI.Events.EventArgs;
-using SnakeAPI.Features;
+using SNAPI.Events.EventArgs;
+using SNAPI.Features;
 using UnityEngine;
-using SPlayer = SnakeAPI.Events.SnakePlayer;
+using SPlayer = SNAPI.Events.Handlers.SnakePlayer;
 using static HarmonyLib.AccessTools;
-namespace SnakeAPI.Patches
+namespace SNAPI.Patches
 {
     [HarmonyPatch(typeof(ChaosKeycardItem), nameof(ChaosKeycardItem.ServerProcessCustomCmd))]
     public class ChaosKeycardItemTranspiler
@@ -33,73 +30,121 @@ namespace SnakeAPI.Patches
                     new CodeInstruction(OpCodes.Call, Method(typeof(ChaosKeycardItemTranspiler), nameof(OnMoved))),
                 ]);
             
+            index = newInstructions.FindIndex(instruction => instruction.opcode == OpCodes.Ldloc_2) + 8;
+            newInstructions.InsertRange(index, 
+                [
+                    new CodeInstruction(OpCodes.Ldarg_0),
+                    new CodeInstruction(OpCodes.Ldloc_2),
+                    new CodeInstruction(OpCodes.Call, Method(typeof(ChaosKeycardItemTranspiler), nameof(OnSwitchedAxes))),
+                ]);
+            
             foreach (CodeInstruction instruction in newInstructions)
                 yield return instruction;
             
             ListPool<CodeInstruction>.Pool.Return(newInstructions);
         }
+        public static readonly List<Vector2Int> StartSegments = [new(9, 6), new(8, 6), new(7, 6), new(6, 6), new(5, 6)];
         public static void OnMoved(ChaosKeycardItem keycard, SnakeNetworkMessage msg)
         {
-            SnakeContext context = SnakeContext.Get(keycard.ItemSerial);
-            bool isNew = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameReset);
-            bool gameOver = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameOver);
-            bool newFood = msg.HasFlag(SnakeNetworkMessage.SyncFlags.HasNewFood);
-            if (!context.Timer.IsRunning && !isNew)
+            try
             {
-                SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
-                context.Playing = true;
-            }
-            context.Timer.Restart();
+                SnakeContext context = SnakeContext.Get(keycard.ItemSerial);
+                if (context == null)
+                {
+                    Log.Debug("OnMoved failed to fire because SnakeContext could not be acquired.");
+                    return;
+                }
+                bool isNew = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameReset);
+                bool gameOver = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameOver);
+                bool newFood = msg.HasFlag(SnakeNetworkMessage.SyncFlags.HasNewFood);
+                if (!context.Timer.IsRunning && !isNew)
+                {
+                    SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
+                    context.Playing = true;
+                }
+                
+                context.Timer.Restart();
 
-            if (newFood)
-            {
-                SPlayer.OnScore(new ScoreEventArgs(context));
-                context.NextFoodPosition = msg.NextFoodPosition ?? throw new NullReferenceException("Next food position was null!");
-            }
-            
-            if (msg.MoveOffset != Vector2Int.zero)
-            {
-                context.Direction = msg.MoveOffset;
-                Vector2Int next = ConfineToPlayableArea(context.Segments.Last() + context.Direction);
-                context.Segments.Insert(0, next);
-                if (!newFood) context.Segments.RemoveAt(context.Segments.Count - 1);
-                SPlayer.OnSnakeMove(new SnakeMoveEventArgs(context));
-            }
-            
-            if (isNew)
-                SPlayer.OnStartingNewSnake(new StartingNewSnakeEventArgs(context));
+                if (newFood)
+                {
+                    if (!isNew) SPlayer.OnScore(new ScoreEventArgs(context));
+                    context.NextFoodPosition = msg.NextFoodPosition ?? throw new NullReferenceException("Next food position was null!");
+                }
 
-            if (gameOver)
-            {
-                SPlayer.OnGameOver(new GameOverEventArgs(context));
-                SPlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
-                context.Timer.Reset();
-                context.Playing = false;
-            }
+                if (isNew)
+                {
+                    context.Segments = new List<Vector2Int>(StartSegments);
+                    SPlayer.OnStartingNewSnake(new StartingNewSnakeEventArgs(context));
+                }
+                
+                if (msg.MoveOffset != Vector2Int.zero && !isNew)
+                {
+                    context.Direction = msg.MoveOffset;
+                    Vector2Int next = ConfineToPlayableArea(context.Segments.Last() + context.Direction);
+                    context.Segments.Insert(0, next);
+                    if (!newFood) context.Segments.RemoveAt(context.Segments.Count - 1);
+                    SPlayer.OnSnakeMove(new SnakeMoveEventArgs(context));
+                }
 
-            // good to use to figure out how these messages work
-            
-            // Log.Warn($"Flags: {msg.Flags.ToString()}");
-            // Log.Warn($"Move Offset: {msg.MoveOffset.ToString()}");
-            // Log.Warn($"Next Food Position: {msg.NextFoodPosition?.ToString() ?? "NULL"}");
-            // if (msg.Segments == null)
-            // {
-            //     Log.Warn("No Segments");
-            //     return;
-            // }
-            // string txt = "Segments: ";
-            // foreach (Vector2Int segment in msg.Segments)
-            // {
-            //     txt += $"{segment.ToString()}, ";
-            // }
-            // if (txt.Length > 1) txt = txt.Remove(txt.Length - 2, 2);
-            // Log.Warn(txt);
+                if (gameOver)
+                {
+                    SPlayer.OnGameOver(new GameOverEventArgs(context));
+                    SPlayer.OnPausingSnake(new PausingSnakeEventArgs(context));
+                    context.Timer.Reset();
+                    context.TotalTimePlaying = TimeSpan.Zero;
+                    context.Playing = false;
+                }
+
+                // good to use to figure out how these messages work
+
+                // Log.Warn($"Flags: {msg.Flags.ToString()}");
+                // Log.Warn($"Move Offset: {msg.MoveOffset.ToString()}");
+                // Log.Warn($"Next Food Position: {msg.NextFoodPosition?.ToString() ?? "NULL"}");
+                // if (msg.Segments == null)
+                // {
+                //     Log.Warn("No Segments");
+                //     return;
+                // }
+                // string txt = "Segments: ";
+                // foreach (Vector2Int segment in msg.Segments)
+                // {
+                //     txt += $"{segment.ToString()}, ";
+                // }
+                // if (txt.Length > 1) txt = txt.Remove(txt.Length - 2, 2);
+                // Log.Warn(txt);
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+            }
         }
-        internal static Vector2Int ConfineToPlayableArea(Vector2Int input)
+        public static void OnSwitchedAxes(ChaosKeycardItem keycard, object obj)
         {
-            return Vector2Int.zero;
-            const int XSize = 0;
-            const int YSize = 0;
+            try
+            {
+                Type T = obj.GetType();
+                int x = (sbyte)(T.GetField("x")?.GetValue(obj) ?? 0);
+                int y = (sbyte)(T.GetField("y")?.GetValue(obj) ?? 0);
+                
+                SnakeContext context = SnakeContext.Get(keycard.ItemSerial);
+                if (context == null)
+                {
+                    Log.Debug("OnMoved failed to fire because SnakeContext could not be acquired.");
+                    return;
+                }
+                context.Direction = new Vector2Int(x, y);
+                
+                SPlayer.OnSwitchAxes(new SwitchAxesEventArgs(context));
+            }
+            catch (Exception e)
+            {
+                Log.Error(e);
+            }
+        }
+        public static Vector2Int ConfineToPlayableArea(Vector2Int input)
+        {
+            const int XSize = 18;
+            const int YSize = 11;
             int x = input.x;
             int y = input.y;
             while (x < 0)
@@ -109,15 +154,16 @@ namespace SnakeAPI.Patches
             return new Vector2Int(x % XSize, y % YSize);
         }
     }
-    [HarmonyPatch(typeof(ChaosKeycardItem), nameof(ChaosKeycardItem.GetNewEngine))]
-    public class SnakeEnginePostfix
-    {
-        [HarmonyPostfix]
-        public static void Postfix(ChaosKeycardItem __instance)
-        {
-            Log.Warn(__instance._snakeAreaSize);
-            Log.Warn(__instance._snakeMaxLength);
-            Log.Warn(__instance._snakeStartLength);
-        }
-    }
+    // [HarmonyPatch(typeof(ChaosKeycardItem), nameof(ChaosKeycardItem.GetNewEngine))]
+    // public class SnakeEnginePostfix
+    // {
+    //     [HarmonyPostfix]
+    //     public static void Postfix(ChaosKeycardItem __instance)
+    //     {
+    //         // THANKS NORTHWOOD
+    //         Log.Warn(__instance._snakeAreaSize); // (18, 11)
+    //         Log.Warn(__instance._snakeMaxLength); // 100
+    //         Log.Warn(__instance._snakeStartLength); // 5
+    //     }
+    // }
 }

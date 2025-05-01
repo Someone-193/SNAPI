@@ -8,8 +8,8 @@
         <ProjectGuid>{8053C64B-DB63-4A02-8961-092A5C8C8216}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>SnakeAPI</RootNamespace>
-        <AssemblyName>SnakeAPI</AssemblyName>
+        <RootNamespace>SNAPI</RootNamespace>
+        <AssemblyName>SNAPI</AssemblyName>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>12</LangVersion>

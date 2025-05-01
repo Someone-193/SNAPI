@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using CommandSystem;
 using Exiled.API.Features;
 using InventorySystem.Items.Keycards.Snake;
-using SnakeAPI.Features;
-namespace SnakeAPI.Commands
+using SNAPI.Features;
+namespace SNAPI.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     public class ForceSnake : ICommand

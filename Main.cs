@@ -5,30 +5,39 @@ using CommandSystem;
 using Exiled.API.Features;
 using HarmonyLib;
 using RemoteAdmin;
-using SnakeAPI.EventHandlers;
+using SNAPI.EventHandlers;
+using SNAPI.Events;
+using SNAPI.Events.Handlers;
 using EServer = Exiled.Events.Handlers.Server;
-using WaitingForPlayers = SnakeAPI.EventHandlers.WaitingForPlayers;
-namespace SnakeAPI
+using WaitingForPlayers = SNAPI.EventHandlers.WaitingForPlayers;
+namespace SNAPI
 {
   public class Main : Plugin<Config>
   {
     public override string Author => "@Someone";
-    public override string Name => "SnakeAPI";
-    public override string Prefix => "SnakeAPI";
+    public override string Name => "SNAPI";
+    public override string Prefix => "SNAPI";
     public static Main Instance { get; private set; }
     private Harmony Harmony;
     public override void OnEnabled()
     {
       Instance = this;
-      Harmony = new Harmony("SnakeAPI");
+      Harmony = new Harmony("SNAPI");
       Harmony.PatchAll();
       EServer.WaitingForPlayers += WaitingForPlayers.OnWaitingForPlayers;
+      SnakePlayer.GameOver += _ => Log.Warn("GameOver");
+      SnakePlayer.PausingSnake += _ => Log.Warn("PausingSnake");
+      SnakePlayer.ResumingSnake += _ => Log.Warn("ResumingSnake");
+      SnakePlayer.Score += _ => Log.Warn("Score");
+      SnakePlayer.SnakeMove += ev => Log.Warn($"SnakeMove: total time: {ev.Context.TotalTimePlaying.TotalSeconds}");
+      SnakePlayer.StartingNewSnake += _ => Log.Warn("StartingNewSnake");
+      SnakePlayer.SwitchAxes += _ => Log.Warn("SwitchAxes");
       base.OnEnabled();
     }
     public override void OnDisabled()
     {
       base.OnDisabled();
-      Harmony.UnpatchAll("SnakeAPI");
+      Harmony.UnpatchAll("SNAPI");
       EServer.WaitingForPlayers -= WaitingForPlayers.OnWaitingForPlayers;
       Instance = null;
     }

@@ -1,7 +1,7 @@
 ﻿using Exiled.API.Features;
 using Exiled.API.Features.Items;
-using SnakeAPI.Features;
-namespace SnakeAPI.Events.EventArgs
+using SNAPI.Features;
+namespace SNAPI.Events.EventArgs
 {
     public class SwitchAxesEventArgs
     {
