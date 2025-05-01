@@ -18,10 +18,9 @@ namespace SNAPI.Patches
     public class ChaosKeycardItemTranspiler
     {
         [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> newInstructions = ListPool<CodeInstruction>.Pool.Get(instructions);
-            // int index = newInstructions.FindIndex(instruction => instruction.Calls(Constructor(typeof(SnakeNetworkMessage), [typeof(NetworkReader)])))
             int index = newInstructions.FindIndex(instruction => instruction.opcode == OpCodes.Ldc_I4_1) - 1;
             newInstructions.InsertRange(index, 
                 [
@@ -43,7 +42,7 @@ namespace SNAPI.Patches
             
             ListPool<CodeInstruction>.Pool.Return(newInstructions);
         }
-        public static readonly List<Vector2Int> StartSegments = [new(9, 6), new(8, 6), new(7, 6), new(6, 6), new(5, 6)];
+        public static readonly List<Vector2Int> StartSegments = [new(9, 5), new(8, 5), new(7, 5), new(6, 5), new(5, 5)];
         public static void OnMoved(ChaosKeycardItem keycard, SnakeNetworkMessage msg)
         {
             try
@@ -57,35 +56,51 @@ namespace SNAPI.Patches
                 bool isNew = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameReset);
                 bool gameOver = msg.HasFlag(SnakeNetworkMessage.SyncFlags.GameOver);
                 bool newFood = msg.HasFlag(SnakeNetworkMessage.SyncFlags.HasNewFood);
-                if (!context.Timer.IsRunning && !isNew)
-                {
-                    SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
-                    context.Playing = true;
-                }
-                
-                context.Timer.Restart();
 
                 if (newFood)
                 {
-                    if (!isNew) SPlayer.OnScore(new ScoreEventArgs(context));
+                    if (!isNew)
+                    {
+                        context.Score++;
+                        SPlayer.OnScore(new ScoreEventArgs(context));
+                    }
                     context.NextFoodPosition = msg.NextFoodPosition ?? throw new NullReferenceException("Next food position was null!");
                 }
 
-                if (isNew)
-                {
+                if (context.Initialized && !context.Playing && (isNew || msg.MoveOffset != Vector2Int.zero))
+                {   
                     context.Segments = new List<Vector2Int>(StartSegments);
+                    context.Playing = true;
+                    context.Timer.Restart();
                     SPlayer.OnStartingNewSnake(new StartingNewSnakeEventArgs(context));
                 }
                 
-                if (msg.MoveOffset != Vector2Int.zero && !isNew)
+                if (msg.MoveOffset != Vector2Int.zero)
                 {
+                    if (!context.Initialized)
+                    {
+                        context.Initialized = true;
+                        return;
+                    }
                     context.Direction = msg.MoveOffset;
-                    Vector2Int next = ConfineToPlayableArea(context.Segments.Last() + context.Direction);
+                    Vector2Int next = ConfineToPlayableArea(context.Segments.First() + context.Direction);
                     context.Segments.Insert(0, next);
+                    context.CurrentHeadPosition = next;
                     if (!newFood) context.Segments.RemoveAt(context.Segments.Count - 1);
                     SPlayer.OnSnakeMove(new SnakeMoveEventArgs(context));
                 }
 
+                switch (context.Timer.IsRunning)
+                {
+                    case false when context.Initialized:
+                        SPlayer.OnResumingSnake(new ResumingSnakeEventArgs(context));
+                        context.Playing = true;
+                        break;
+                    case true:
+                        context.Timer.Restart();
+                        break;
+                }
+                
                 if (gameOver)
                 {
                     SPlayer.OnGameOver(new GameOverEventArgs(context));
@@ -93,6 +108,7 @@ namespace SNAPI.Patches
                     context.Timer.Reset();
                     context.TotalTimePlaying = TimeSpan.Zero;
                     context.Playing = false;
+                    context.Score = 0;
                 }
 
                 // good to use to figure out how these messages work

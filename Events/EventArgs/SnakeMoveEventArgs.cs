@@ -2,7 +2,6 @@
 using Exiled.API.Features.Items;
 using Exiled.Events.EventArgs.Interfaces;
 using SNAPI.Features;
-using UnityEngine;
 namespace SNAPI.Events.EventArgs
 {
     public class SnakeMoveEventArgs : IPlayerEvent

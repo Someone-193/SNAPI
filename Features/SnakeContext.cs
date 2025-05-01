@@ -5,6 +5,7 @@ using Exiled.API.Features;
 using Exiled.API.Features.Items;
 using InventorySystem.Items.Keycards;
 using InventorySystem.Items.Keycards.Snake;
+using MEC;
 using UnityEngine;
 namespace SNAPI.Features
 {
@@ -13,10 +14,11 @@ namespace SNAPI.Features
         public Player Player { get; } = Item.Get(serial).Owner;
         public Keycard Keycard { get; } = (Keycard)Item.Get(serial);
         public bool Playing { get; internal set; } = false;
+        internal bool Initialized { get; set; } = false;
         public TimeSpan TotalTimePlaying { get; internal set; }
-        public int Score => Engine.Score;
-        public int Length => Engine.CurLength;
-        public Vector2Int CurrentPosition { get; internal set; } = new();
+        public int Score { get; internal set; }
+        public int TotalLength => Score + 5;
+        public Vector2Int CurrentHeadPosition { get; internal set; } = new();
         public Vector2Int Direction { get; internal set; } = new(9, 6);
         public Vector2Int? NextFoodPosition { get; internal set; } = null;
         public List<Vector2Int> Segments { get; internal set; } = [];
@@ -27,12 +29,9 @@ namespace SNAPI.Features
         {
             if (serial == 0) 
                 return null;
-            
+
             if (Item.Get(serial) is not Keycard {Type: ItemType.KeycardChaosInsurgency})
-            {
-                Log.Error($"{nameof(Get)}: SnakeContext.Get(); was used with a non Chaos keycard serial");
                 return null;
-            }
 
             ChaosKeycardItem.GetEngineForSerial(serial);
             
@@ -43,6 +42,12 @@ namespace SNAPI.Features
             context.Timer.Reset();
             SavedContexts.Add(serial, context);
             return context;
+        }
+        public void ForceStop()
+        {
+            if (Player.CurrentItem != Keycard) return;
+            Player.CurrentItem = null;
+            Timing.CallDelayed(0F, () => Player.CurrentItem = Keycard);
         }
         ~SnakeContext()
         {
