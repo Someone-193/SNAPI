@@ -8,8 +8,8 @@
         <ProjectGuid>{8053C64B-DB63-4A02-8961-092A5C8C8216}</ProjectGuid>
         <OutputType>Library</OutputType>
         <AppDesignerFolder>Properties</AppDesignerFolder>
-        <RootNamespace>SnakeControl</RootNamespace>
-        <AssemblyName>SnakeControl</AssemblyName>
+        <RootNamespace>SnakeAPI</RootNamespace>
+        <AssemblyName>SnakeAPI</AssemblyName>
         <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>12</LangVersion>
@@ -84,11 +84,25 @@
         <Reference Include="UnityEngine.CoreModule">
           <HintPath>..\..\..\Downloads\Dev\UnityEngine.CoreModule.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.PhysicsModule">
+          <HintPath>..\..\..\Downloads\Dev\UnityEngine.PhysicsModule.dll</HintPath>
+        </Reference>
         <Reference Include="YamlDotNet, Version=11.0.0.0, Culture=neutral, PublicKeyToken=ec19458f3c15af5e, processorArchitecture=MSIL">
           <HintPath>..\packages\ExMod.Exiled.9.6.0-beta8\lib\net48\YamlDotNet.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Commands\ForceSnake.cs" />
+        <Compile Include="EventHandlers\WaitingForPlayers.cs" />
+        <Compile Include="Events\EventArgs\GameOverEventArgs.cs" />
+        <Compile Include="Events\EventArgs\PausingSnakeEventArgs.cs" />
+        <Compile Include="Events\EventArgs\ResumingSnakeEventArgs.cs" />
+        <Compile Include="Events\EventArgs\ScoreEventArgs.cs" />
+        <Compile Include="Events\EventArgs\SnakeMoveEventArgs.cs" />
+        <Compile Include="Events\EventArgs\StartingNewSnakeEventArgs.cs" />
+        <Compile Include="Events\EventArgs\SwitchAxesEventArgs.cs" />
+        <Compile Include="Events\Handlers\SnakePlayer.cs" />
+        <Compile Include="Features\SnakeContext.cs" />
         <Compile Include="Main.cs" />
         <Compile Include="Config.cs" />
         <Compile Include="Patches\ChaosKeycardItem.cs" />
