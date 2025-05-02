@@ -1,32 +1,56 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using CommandSystem;
-using Exiled.API.Features;
-using HarmonyLib;
-using RemoteAdmin;
-using SNAPI.EventHandlers;
-using SNAPI.Events.Handlers;
-using EServer = Exiled.Events.Handlers.Server;
-using EPlayer = Exiled.Events.Handlers.Player;
-using WaitingForPlayers = SNAPI.EventHandlers.WaitingForPlayers;
-#if RUEI
+﻿#if RUEI
 using RueI;
 #endif
 namespace SNAPI
 {
-  public class Main : Plugin<Config>
+    using System;
+    using System.Collections.Generic;
+    using System.Reflection;
+    using CommandSystem;
+    using Exiled.API.Features;
+    using HarmonyLib;
+    using RemoteAdmin;
+    using SNAPI.EventHandlers;
+    using SNAPI.Events.Handlers;
+    using EPlayer = Exiled.Events.Handlers.Player;
+    using EServer = Exiled.Events.Handlers.Server;
+    using WaitingForPlayers = SNAPI.EventHandlers.WaitingForPlayers;
+
+    /// <summary>
+    /// The main plugin class.
+    /// </summary>
+    public class Main : Plugin<Config>
   {
+    private Harmony harmony = null!;
+
+    /// <summary>
+    /// Gets the main plugin instance.
+    /// </summary>
+    public static Main Instance { get; private set; } = null!;
+
+    /// <summary>
+    /// Gets Me!.
+    /// </summary>
     public override string Author => "@Someone";
+
+    /// <summary>
+    /// Gets the name of the plugin.
+    /// </summary>
     public override string Name => "SNAPI";
+
+    /// <summary>
+    /// Gets the prefix of the plugin.
+    /// </summary>
     public override string Prefix => "SNAPI";
-    public static Main Instance { get; private set; }
-    private Harmony Harmony;
+
+    /// <summary>
+    /// Called when the plugin is enabled.
+    /// </summary>
     public override void OnEnabled()
     {
       Instance = this;
-      Harmony = new Harmony("SNAPI");
-      Harmony.PatchAll();
+      harmony = new Harmony("SNAPI");
+      harmony.PatchAll();
       EServer.WaitingForPlayers += WaitingForPlayers.OnWaitingForPlayers;
       EPlayer.ChangingItem += ChangingItem.OnChangingItem;
       EPlayer.ItemRemoved += ItemRemoved.OnItemRemoved;
@@ -44,40 +68,48 @@ namespace SNAPI
       // SnakePlayer.SnakeMove += _ => Log.Warn("Snake Moved");
       // SnakePlayer.StartingNewSnake += _ => Log.Warn("Snake Started");
       // SnakePlayer.SwitchAxes += _ => Log.Warn("Switch Axes");
-      
 #if RUEI
       RueIMain.EnsureInit();
 #endif
       base.OnEnabled();
     }
+
+    /// <summary>
+    /// Called when the plugin is disabled.
+    /// </summary>
     public override void OnDisabled()
     {
       base.OnDisabled();
-      Harmony.UnpatchAll("SNAPI");
+      harmony.UnpatchAll("SNAPI");
       EServer.WaitingForPlayers -= WaitingForPlayers.OnWaitingForPlayers;
       EPlayer.ChangingItem -= ChangingItem.OnChangingItem;
       EPlayer.ItemRemoved -= ItemRemoved.OnItemRemoved;
-      if (!Config.APIMode)
-      {
-        SnakePlayer.StartingNewSnake -= StartingNewSnake.OnStartNewSnake;
-        SnakePlayer.SnakeMove -= SnakeMove.OnSnakeMove;
-      }
-      Instance = null;
+      if (Config.APIMode)
+            return;
+      SnakePlayer.StartingNewSnake -= StartingNewSnake.OnStartNewSnake;
+      SnakePlayer.SnakeMove -= SnakeMove.OnSnakeMove;
     }
+
+    /// <summary>
+    /// Called when registering commands.
+    /// </summary>
     public override void OnRegisteringCommands()
     {
       Dictionary<Type, List<ICommand>> dictionary = new();
       foreach (Type type1 in Assembly.GetTypes())
       {
-        if (type1.GetInterface("ICommand") != typeof(ICommand) || !Attribute.IsDefined(type1, typeof(CommandHandlerAttribute))) continue;
+        if (type1.GetInterface("ICommand") != typeof(ICommand) || !Attribute.IsDefined(type1, typeof(CommandHandlerAttribute))) 
+          continue;
         foreach (CustomAttributeData customAttributeData in type1.GetCustomAttributesData())
         {
           try
           {
-            if (customAttributeData.AttributeType != typeof(CommandHandlerAttribute)) continue;
+            if (customAttributeData.AttributeType != typeof(CommandHandlerAttribute)) 
+              continue;
             Type type2 = (Type)customAttributeData.ConstructorArguments[0].Value;
             ICommand command1 = GetCommand(type1) ?? (ICommand)Activator.CreateInstance(type1);
-            if (command1.Command == "ForceSnake" && Config.NoVSRViolatingCommand) continue;
+            if (command1.Command == "ForceSnake" && Config.NoVSRViolatingCommand) 
+              continue;
             if (typeof(ParentCommand).IsAssignableFrom(type2))
             {
               if (!(GetCommand(type2) is ParentCommand command2))
@@ -108,6 +140,7 @@ namespace SNAPI
                 else
                   Log.Error($"An error has occurred while registering a command: {ex}");
               }
+              
               Commands[type2][type1] = command1;
             }
           }

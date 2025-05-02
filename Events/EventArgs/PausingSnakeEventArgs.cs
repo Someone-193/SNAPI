@@ -1,19 +1,29 @@
-﻿using Exiled.API.Features;
-using Exiled.API.Features.Items;
-using Exiled.Events.EventArgs.Interfaces;
-using SNAPI.Features;
-namespace SNAPI.Events.EventArgs
+﻿namespace SNAPI.Events.EventArgs
 {
-    public class PausingSnakeEventArgs : IPlayerEvent
+    using Exiled.API.Features;
+    using Exiled.API.Features.Items;
+    using Exiled.Events.EventArgs.Interfaces;
+    using SNAPI.Features;
+
+    /// <summary>
+    /// The arguments for when a player pauses a Snake game.
+    /// </summary>
+    /// <param name="context">The SnakeContext this event happened in.</param>
+    public class PausingSnakeEventArgs(SnakeContext context) : IPlayerEvent
     {
-        public PausingSnakeEventArgs(SnakeContext context)
-        {
-            Player = context.Player;
-            Keycard = context.Keycard;
-            Context = context;
-        }
-        public Player Player { get; }
-        public Keycard Keycard { get; }
-        public SnakeContext Context { get; }
+        /// <summary>
+        /// Gets the Player that is playing Snake.
+        /// </summary>
+        public Player Player { get; } = context.Player;
+        
+        /// <summary>
+        /// Gets the keycard that this SnakeContext is on.
+        /// </summary>
+        public Keycard Keycard { get; } = context.Keycard;
+        
+        /// <summary>
+        /// Gets the SnakeContext this happened in.
+        /// </summary>
+        public SnakeContext Context { get; } = context;
     }
 }
