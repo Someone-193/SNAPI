@@ -73,9 +73,9 @@
         public bool SettingsAffectAdmins { get; set; } = false;
         
         /// <summary>
-        /// Gets a value indicating whether a command which can violate VSR gets registerd when this plugin is enabled.
+        /// Gets a value indicating whether a command that soft disconnects players gets registerd when this plugin is enabled.
         /// </summary>
-        [Description("If enabled, allows all admins to use the SNAPI command which soft-disconnects clients which may violate VSR, use with caution.")]
-        public bool NoVSRViolatingCommand { get; set; } = true;
+        [Description("If enabled, allows all admins to use the SNAPI command which soft-disconnects clients")]
+        public bool SoftDcCommandEnabled { get; set; } = true;
     }
 }

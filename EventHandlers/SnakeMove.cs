@@ -28,6 +28,10 @@
         /// A dictionary of Players and their time playing snake to be ignored.
         /// </summary>
         public static readonly Dictionary<Player, double> SavedDurations = new();
+        
+#if RUEI
+        private static TimedElemRef<SetElement> Curr { get; set; } = null!;
+#endif
 
         /// <summary>
         /// Called whenever a Snake game updates.
@@ -63,10 +67,6 @@
             }
         }
 
-#if RUEI
-        private static TimedElemRef<SetElement> Curr { get; set; }
-#endif
-
         /// <summary>
         /// Shows a player a hint representing how much time it will take until they can play Snake again.
         /// </summary>
@@ -89,18 +89,19 @@
 #elif HSM
             ev.Player.GetPlayerUi().CommonHint.ShowItemHint(message, Main.Instance.Config.MessageDuration);
 #elif RUEI
-                DisplayCore core = DisplayCore.Get(ev.Player.ReferenceHub);
-                if (Curr != null)
+            DisplayCore core = DisplayCore.Get(ev.Player.ReferenceHub);
+            if (Curr != null)
+            {
+                Element? element = core.GetElement(Curr);
+                if (element != null)
                 {
-                    Element element = core.GetElement(Curr);
-                    if (element != null)
-                    {
-                        element.Enabled = false;
-                        core.Update();
-                    }
+                    element.Enabled = false;
+                    core.Update();
                 }
-                Curr = new TimedElemRef<SetElement>();
-                core.SetElemTemp(message, 500, TimeSpan.FromSeconds(Main.Instance.Config.MessageDuration), Curr);
+            }
+
+            Curr = new TimedElemRef<SetElement>();
+            core.SetElemTemp(message, 500, TimeSpan.FromSeconds(Main.Instance.Config.MessageDuration), Curr);
 #endif
         }
     }

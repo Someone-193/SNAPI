@@ -13,8 +13,6 @@
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
     public class ForceSnake : ICommand
     {
-        private static readonly HashSet<Player> Confirmation = [];
-        
         /// <summary>
         /// Gets the Command's name.
         /// </summary>
@@ -23,7 +21,7 @@
         /// <summary>
         /// Gets the Command's description.
         /// </summary>
-        public string Description => "LIKELY VIOLATES VSR, DO NOT USE EXCESSIVELY.\n\nForces a player to play snake by soft-dc'ing them if they're playing. /ForceSnake <RA ID>";
+        public string Description => "Forces a player to play snake by soft-dc'ing them if they're playing. Usage: ForceSnake <RA ID>";
 
         /// <summary>
         /// Gets the Command's aliases.
@@ -59,13 +57,6 @@
                 return true;
             }
             
-            if (Confirmation.Add(user))
-            {
-                response = "<color=red>THIS COMMAND WILL LIKELY VIOLATE VSR, ARE YOU SURE YOU WANT TO USE IT?</color>\nrerun the command to confirm.";
-                return true;
-            }
-            
-            Confirmation.Remove(user);
             target.Connection.Send(SnakeNetworkMessage.NewGameOver());
             response = "Done!";
             return true;

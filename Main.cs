@@ -1,7 +1,4 @@
-﻿#if RUEI
-using RueI;
-#endif
-namespace SNAPI
+﻿namespace SNAPI
 {
     using System;
     using System.Collections.Generic;
@@ -15,6 +12,9 @@ namespace SNAPI
     using EPlayer = Exiled.Events.Handlers.Player;
     using EServer = Exiled.Events.Handlers.Server;
     using WaitingForPlayers = SNAPI.EventHandlers.WaitingForPlayers;
+#if RUEI
+    using RueI;
+#endif
 
     /// <summary>
     /// The main plugin class.
