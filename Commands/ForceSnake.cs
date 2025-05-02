@@ -40,7 +40,13 @@
         public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
             Player user = Player.Get(sender);
-            if (!int.TryParse(arguments.At(1), out int id))
+            if (arguments.Count != 1)
+            {
+                response = "Usage: ForceSnake <RA ID>";
+                return false;
+            }
+            
+            if (!int.TryParse(arguments.At(0), out int id))
             {
                 response = "Please specify a valid ID.";
                 return false;
