@@ -108,7 +108,7 @@
               continue;
             Type type2 = (Type)customAttributeData.ConstructorArguments[0].Value;
             ICommand command1 = GetCommand(type1) ?? (ICommand)Activator.CreateInstance(type1);
-            if (command1.Command == "ForceSnake" && Config.NoVSRViolatingCommand) 
+            if (command1.Command == "ForceSnake" && Config.SoftDcCommandEnabled) 
               continue;
             if (typeof(ParentCommand).IsAssignableFrom(type2))
             {
