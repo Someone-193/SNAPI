@@ -1,8 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="../plugin.props"/>
+    
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+        <LangVersion>12.0</LangVersion>
+    </PropertyGroup>
+    
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EXILED|AnyCPU' ">
-      <OutputPath>bin\EXILED\</OutputPath>
+      <OutputPath>..\bin\</OutputPath>
       <DefineConstants>EXILED</DefineConstants>
       <Optimize>true</Optimize>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -12,7 +18,7 @@
         <AssemblyName>SNAPI-Exiled</AssemblyName>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'HSM|AnyCPU' ">
-      <OutputPath>bin\HSM\</OutputPath>
+      <OutputPath>..\bin</OutputPath>
       <DefineConstants>HSM</DefineConstants>
       <Optimize>true</Optimize>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -22,7 +28,7 @@
         <AssemblyName>SNAPI-HSM</AssemblyName>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'RueI|AnyCPU' ">
-      <OutputPath>bin\RueI\</OutputPath>
+      <OutputPath>..\bin\</OutputPath>
       <DefineConstants>RUEI</DefineConstants>
       <Optimize>true</Optimize>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
