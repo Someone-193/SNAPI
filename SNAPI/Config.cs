@@ -82,6 +82,6 @@
         /// Gets a value indicating whether a command that soft disconnects players gets registerd when this plugin is enabled.
         /// </summary>
         [Description("If enabled, allows all admins to use the SNAPI command which soft-disconnects clients")]
-        public bool SoftDcCommandEnabled { get; set; } = true;
+        public bool SoftDcCommandEnabled { get; set; } = false;
     }
 }
