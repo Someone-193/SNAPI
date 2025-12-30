@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using Exiled.API.Features;
+    using Exiled.Permissions.Extensions;
     using SNAPI.Events.EventArgs;
 #if HSM
     using HintServiceMeow.UI.Extension;
@@ -41,6 +42,9 @@
         {
             if (ev.Player.RemoteAdminAccess && !Main.Instance.Config.SettingsAffectAdmins) 
                 return;
+            if (ev.Player.CheckPermission(Main.Instance.Config.SnakePermission))
+                return;
+
             if (Cooldowns.TryGetValue(ev.Player, out double cooldownRemaining))
             {
                 ev.Context.StoppingAttempts++;

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Reflection;
     using CommandSystem;
+    using Exiled.API.Enums;
     using Exiled.API.Features;
     using HarmonyLib;
     using RemoteAdmin;
@@ -42,6 +43,11 @@
     /// Gets the prefix of the plugin.
     /// </summary>
     public override string Prefix => "SNAPI";
+
+    /// <summary>
+    /// Gets the priority of the plugin.
+    /// </summary>
+    public override PluginPriority Priority => PluginPriority.High;
 
     /// <summary>
     /// Called when the plugin is enabled.
@@ -108,7 +114,7 @@
               continue;
             Type type2 = (Type)customAttributeData.ConstructorArguments[0].Value;
             ICommand command1 = GetCommand(type1) ?? (ICommand)Activator.CreateInstance(type1);
-            if (command1.Command == "ForceSnake" && Config.SoftDcCommandEnabled) 
+            if (command1.Command == "ForceSnake" && !Config.SoftDcCommandEnabled) 
               continue;
             if (typeof(ParentCommand).IsAssignableFrom(type2))
             {
@@ -129,7 +135,7 @@
                 if (type2 == typeof(RemoteAdminCommandHandler))
                   CommandProcessor.RemoteAdminCommandHandler.RegisterCommand(command1);
                 else if (type2 == typeof(GameConsoleCommandHandler))
-                  GameCore.Console.singleton.ConsoleCommandHandler.RegisterCommand(command1);
+                  GameCore.Console.ConsoleCommandHandler.RegisterCommand(command1);
                 else if (type2 == typeof(ClientCommandHandler))
                   QueryProcessor.DotCommandHandler.RegisterCommand(command1);
               }

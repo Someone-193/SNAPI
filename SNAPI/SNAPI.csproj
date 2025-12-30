@@ -5,6 +5,7 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
         <LangVersion>12.0</LangVersion>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'EXILED|AnyCPU' ">
@@ -18,7 +19,7 @@
         <AssemblyName>SNAPI-Exiled</AssemblyName>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'HSM|AnyCPU' ">
-      <OutputPath>..\bin</OutputPath>
+      <OutputPath>..\bin\</OutputPath>
       <DefineConstants>HSM</DefineConstants>
       <Optimize>true</Optimize>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -43,7 +44,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ExMod.Exiled" Version="9.6.0-beta8" />
+        <PackageReference Include="ExMod.Exiled" Version="$(ExiledVersion)" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -59,14 +60,6 @@
         <Reference Include="Snake" HintPath="$(EXILED_REFERENCES)\Snake.dll" Private="false" />
         <Reference Include="UnityEngine.CoreModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.CoreModule.dll" Private="false" />
         <Reference Include="UnityEngine.PhysicsModule" HintPath="$(EXILED_REFERENCES)\UnityEngine.PhysicsModule.dll" Private="false" />
-        <Reference Include="System"/>
-        <Reference Include="System.Core"/>
-        <Reference Include="System.Data"/>
-        <Reference Include="System.Xml"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Include="packages.config" />
     </ItemGroup>
 
 </Project>

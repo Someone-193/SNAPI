@@ -71,7 +71,13 @@
         /// </summary>
         [Description("If enabled, all settings pertaining to snake will apply to staff members as well")]
         public bool SettingsAffectAdmins { get; set; } = false;
-        
+
+        /// <summary>
+        /// Gets the permission required for a player to play snake and bypass anti-snake preventions.
+        /// </summary>
+        [Description("Players with this permission will not be affected by normal anti-snake SNAPI things. Useful if you want your patreons to be able to play snake or something.")]
+        public string SnakePermission { get; set; } = "SNAPI.PlaySnake";
+
         /// <summary>
         /// Gets a value indicating whether a command that soft disconnects players gets registerd when this plugin is enabled.
         /// </summary>
