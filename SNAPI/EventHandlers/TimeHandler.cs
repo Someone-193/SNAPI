@@ -20,7 +20,7 @@
         {
             try
             {
-                foreach (SnakeContext context in SnakeContext.SavedContexts.Values)
+                foreach (SnakeContext context in SnakeContext.SavedContexts.Values.ToArray())
                 {
                     bool skip = context.TotalTimePlaying.TotalSeconds < 0.6F;
                     bool overrideValue = context.Timer.Elapsed.TotalSeconds > 0.6F;
